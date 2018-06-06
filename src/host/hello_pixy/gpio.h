@@ -6,7 +6,8 @@
 
 
 //Pin masks etc.
-typedef enum pinmask  { PIN0 = 0x01,
+typedef enum pinmask  { PIN_NONE = 0x00,
+                        PIN0 = 0x01,
                         PIN1 = 0x02,
                         PIN2 = 0x04,
                         PIN3 = 0x08,
@@ -29,5 +30,5 @@ extern int gpio_wait_for_pin(pinmask pin, pinvalue value, int trigger, int timeo
 extern int gpio_hold(int modechange, int write);
 extern int gpio_commit(int modechange, int write);
 extern int gpio_revert(int modechange, int write);
-
+extern int gpio_issinglepin(pinmask pin);
 #endif

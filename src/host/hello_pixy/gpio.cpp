@@ -164,40 +164,36 @@ int gpio_read_pin(pinmask pin, pinvalue *value){
 }
 
 int gpio_wait_for_pin(pinmask pin, pinvalue value, int trigger, int timeout){
-    pinmask p = PIN0
     unsigned char polldat[2];
     struct timespec start, clk;
-    while(p != pin && p < PIN_ALL){
-        p = p << 1;
-    }
-    //checks if only a single pin was polled
-    if(p > PIN_ALL){
+    //check if only a single pin was polled
+    if(!issinglepin(pin){
         fprintf(stderr, "Cannot wait for more than one pin!\n");
         return 1;
     }
-    if(p & pinmap){ // trying to poll an output pin makes no sense (input pins are 0 in pinmap)
+    if(pin & pinmap){ // trying to poll an output pin makes no sense (input pins are 0 in pinmap)
         fprintf(stderr, "Trying to poll an output pin\n");
         return 2;
     }
     if(trigger){ //flank triggered - setup polldat w/ current pin level
         ftdi_read_pins(device, polldat);
-        polldat &= p;
+        polldat &= pin;
     }
     //premask target pinvalue
-    value &= p;
+    value &= pin;
     //approx. usb response time is ~110msec, so ~80msec sleep after poll should be ok
     //for 200msec polling period
     //setup initial time for timeout criterion
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     while(1){
         //save old pinvalue
-        polldat[1] = polldat[0] & p;
+        polldat[1] = polldat[0] & pin;
         //read new pinvalue
         ftdi_read_pins(device, polldat);
-        if(value == (*polldat & p)){ //correct level
+        if(value == (*polldat & pin)){ //correct level
             if(!trigger){ //level triggered - return immediately
                 return 0;
-            }else if(polldat[1] != (*polldat & p)){ //transition detected
+            }else if(polldat[1] != (*polldat & pin)){ //transition detected
                 return 0;
             }
         }
@@ -256,6 +252,15 @@ int gpio_revert(int modechange, int write){
     if(write){
         wrbuf_hold = *wrbuf;
         hold_write = 0;
+    }
+    return 0;
+}
+
+int gpio_issinglepin(pinmask pin){
+    pinmask p = PIN0;
+    while(p < PIN_ALL){
+        if(p == pin){ return 1; }
+        else{ p = p << 1; }
     }
     return 0;
 }
