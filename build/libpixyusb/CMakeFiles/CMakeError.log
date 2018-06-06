@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_71574/fast"
+/usr/bin/make -f CMakeFiles/cmTC_71574.dir/build.make CMakeFiles/cmTC_71574.dir/build
+make[1]: Verzeichnis „/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp“ wird betreten
+Building CXX object CMakeFiles/cmTC_71574.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++      -o CMakeFiles/cmTC_71574.dir/CheckSymbolExists.cxx.o -c /home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+Linking CXX executable cmTC_71574
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_71574.dir/link.txt --verbose=1
+/usr/bin/c++        CMakeFiles/cmTC_71574.dir/CheckSymbolExists.cxx.o  -o cmTC_71574 -rdynamic 
+CMakeFiles/cmTC_71574.dir/CheckSymbolExists.cxx.o: In function `main':
+CheckSymbolExists.cxx:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_71574.dir/build.make:97: die Regel für Ziel „cmTC_71574“ scheiterte
+make[1]: *** [cmTC_71574] Fehler 1
+make[1]: Verzeichnis „/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp“ wird verlassen
+Makefile:126: die Regel für Ziel „cmTC_71574/fast“ scheiterte
+make: *** [cmTC_71574/fast] Fehler 2
+
+File /home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_e22b9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_e22b9.dir/build.make CMakeFiles/cmTC_e22b9.dir/build
+make[1]: Verzeichnis „/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp“ wird betreten
+Building CXX object CMakeFiles/cmTC_e22b9.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++     -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_e22b9.dir/CheckFunctionExists.cxx.o -c /home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_e22b9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e22b9.dir/link.txt --verbose=1
+/usr/bin/c++    -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_e22b9.dir/CheckFunctionExists.cxx.o  -o cmTC_e22b9 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_e22b9.dir/build.make:97: die Regel für Ziel „cmTC_e22b9“ scheiterte
+make[1]: *** [cmTC_e22b9] Fehler 1
+make[1]: Verzeichnis „/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/CMakeTmp“ wird verlassen
+Makefile:126: die Regel für Ziel „cmTC_e22b9/fast“ scheiterte
+make: *** [cmTC_e22b9/fast] Fehler 2
+
+

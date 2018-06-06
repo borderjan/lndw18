@@ -1,0 +1,7 @@
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/install/strip.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/install/local.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/pixyusb.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/install.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/list_install_components.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/edit_cache.dir
+/home/jan/pixy/pixy/build/libpixyusb/CMakeFiles/rebuild_cache.dir
