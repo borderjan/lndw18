@@ -19,6 +19,8 @@
 #include <signal.h>
 #include <string.h>
 #include "pixy.h"
+#include "robot.h"
+#include "gpio.h"
 
 #define BLOCK_BUFFER_SIZE    25
 #define NSIGS 7
@@ -69,12 +71,9 @@ int main(int argc, char * argv[])
     
     // Catch CTRL+C (SIGINT) signals //
     signal(SIGINT, handle_SIGINT);
-    
     printf("Hello Pixy:\n libpixyusb Version: %s\n", __LIBPIXY_VERSION__);
-    
     // Connect to Pixy //
     pixy_init_status = pixy_init();
-    
     // Was there an error initializing pixy? //
     if(!pixy_init_status == 0)
     {
@@ -84,7 +83,6 @@ int main(int argc, char * argv[])
         
         return pixy_init_status;
     }
-    
     // Request Pixy firmware version //
     {
         uint16_t major;
@@ -145,8 +143,17 @@ int main(int argc, char * argv[])
     }
     #endif
     
-    //setup LUTs
-    
+    //pixycam setup done, now for the robot...
+    gpio_initialize(); //init adafruit ft232h gpio interface
+    gpio_reset(); //put gpios in defined state
+    //setup comm pins
+    setup_robot(PIN_7, PIN_4, PIN_NONE, PIN_0 | PIN_1 | PIN_2 | PIN_3);
+    //setup start lamp / button pins
+    gpio_set_pin_mode(INPUT, PIN_6);
+    gpio_set_pin_mode(OUTPUT, PIN_5);
+    gpio_write_pin(PIN_5 | PIN_4, HIGH); // turn lamp off & clear robot signal line
+    printf("Waiting for Robot...\n");
+    do_handshake_slave();
     int doSort = 0;
     printf("Detecting blocks...\n");
     while(run_flag)

@@ -7,14 +7,14 @@
 
 //Pin masks etc.
 typedef enum pinmask  { PIN_NONE = 0x00,
-                        PIN0 = 0x01,
-                        PIN1 = 0x02,
-                        PIN2 = 0x04,
-                        PIN3 = 0x08,
-                        PIN4 = 0x10,
-                        PIN5 = 0x20,
-                        PIN6 = 0x40,
-                        PIN7 = 0x80,
+                        PIN_0 = 0x01,
+                        PIN_1 = 0x02,
+                        PIN_2 = 0x04,
+                        PIN_3 = 0x08,
+                        PIN_4 = 0x10,
+                        PIN_5 = 0x20,
+                        PIN_6 = 0x40,
+                        PIN_7 = 0x80,
                         PIN_ALL = 0xff
                         };
 typedef enum pinmode  { INPUT, OUTPUT };

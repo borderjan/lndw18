@@ -15,7 +15,11 @@ int do_handshake_master(){
 }
  
 int do_handshake_slave(){
-    //TODO / unused for now
+    gpio_hold(0,0);
+    gpio_wait_for_pin(hs_rx, SET, 0, -1);
+    gpio_write_pin(hs_tx, SET);
+    gpio_wait_for_pin(hs_rx, CLR, 0, -1);
+    gpio_write_pin(hs_tx, CLR);
 }
  
 int write_data(int data){

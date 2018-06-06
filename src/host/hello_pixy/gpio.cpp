@@ -257,7 +257,7 @@ int gpio_revert(int modechange, int write){
 }
 
 int gpio_issinglepin(pinmask pin){
-    pinmask p = PIN0;
+    pinmask p = PIN_0;
     while(p < PIN_ALL){
         if(p == pin){ return 1; }
         else{ p = p << 1; }
