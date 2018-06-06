@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <libftdi1/ftdi.h>
 #include <libusb.h>
+#include <time.h>
 
 #include "gpio.h"
 
@@ -129,7 +130,7 @@ int gpio_set_pin_mode(pinmode mode, pinmask pin){
     if(!hold_pinmode){
         return gpio_commit(1,0);
         return 0;
-    }else{ return -1 };
+    }else{ return 0; };
 }
 
 int gpio_write_pin(pinmask pin, pinvalue value){
@@ -149,7 +150,7 @@ int gpio_write_pin(pinmask pin, pinvalue value){
     }
     if(!hold_write){
         return gpio_commit(0,1);
-    }else{ return -1; }
+    }else{ return 0; }
 }
 
 int gpio_read_pin(pinmask pin, pinvalue *value){
@@ -163,7 +164,52 @@ int gpio_read_pin(pinmask pin, pinvalue *value){
 }
 
 int gpio_wait_for_pin(pinmask pin, pinvalue value, int trigger, int timeout){
-    //TODO
+    pinmask p = PIN0
+    unsigned char polldat[2];
+    struct timespec start, clk;
+    while(p != pin && p < PIN_ALL){
+        p = p << 1;
+    }
+    //checks if only a single pin was polled
+    if(p > PIN_ALL){
+        fprintf(stderr, "Cannot wait for more than one pin!\n");
+        return 1;
+    }
+    if(p & pinmap){ // trying to poll an output pin makes no sense (input pins are 0 in pinmap)
+        fprintf(stderr, "Trying to poll an output pin\n");
+        return 2;
+    }
+    if(trigger){ //flank triggered - setup polldat w/ current pin level
+        ftdi_read_pins(device, polldat);
+        polldat &= p;
+    }
+    //premask target pinvalue
+    value &= p;
+    //approx. usb response time is ~110msec, so ~80msec sleep after poll should be ok
+    //for 200msec polling period
+    //setup initial time for timeout criterion
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    while(1){
+        //save old pinvalue
+        polldat[1] = polldat[0] & p;
+        //read new pinvalue
+        ftdi_read_pins(device, polldat);
+        if(value == (*polldat & p)){ //correct level
+            if(!trigger){ //level triggered - return immediately
+                return 0;
+            }else if(polldat[1] != (*polldat & p)){ //transition detected
+                return 0;
+            }
+        }
+        //still wrong pinlevel - check timeout
+        if(timeout > -1){
+            clock_gettime(CLOCK_MONOTONIC_RAW, &clk);
+            if (timeout < (clk.tv_secs - start.tv_secs)){ //timeout
+                return -1;
+            }
+        }
+        usleep(80000);//sleep for 80msec
+    }
     return -1;
 }
 
@@ -200,3 +246,16 @@ int gpio_commit(int modechange, int write){
         hold_write = 0;
     }
     return 0;
+}
+
+int gpio_revert(int modechange, int write){
+    if(modechange){
+        pinmap_hold = pinmap;
+        hold_pinmode = 0;
+    }
+    if(write){
+        wrbuf_hold = *wrbuf;
+        hold_write = 0;
+    }
+    return 0;
+}
