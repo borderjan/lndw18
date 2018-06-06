@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/jan/pixy/pixy/src/host/hello_pixy/gpio.h
+
 /home/jan/pixy/pixy/src/host/hello_pixy/hello_pixy.cpp
 stdio.h
 -
@@ -19,4 +21,12 @@ string.h
 -
 pixy.h
 /home/jan/pixy/pixy/src/host/hello_pixy/pixy.h
+robot.h
+/home/jan/pixy/pixy/src/host/hello_pixy/robot.h
+gpio.h
+/home/jan/pixy/pixy/src/host/hello_pixy/gpio.h
+
+/home/jan/pixy/pixy/src/host/hello_pixy/robot.h
+gpio.h
+/home/jan/pixy/pixy/src/host/hello_pixy/gpio.h
 
