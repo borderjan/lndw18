@@ -123,6 +123,33 @@ hello_pixy/fast:
 	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/build
 .PHONY : hello_pixy/fast
 
+gpio.o: gpio.cpp.o
+
+.PHONY : gpio.o
+
+# target to build an object file
+gpio.cpp.o:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/gpio.cpp.o
+.PHONY : gpio.cpp.o
+
+gpio.i: gpio.cpp.i
+
+.PHONY : gpio.i
+
+# target to preprocess a source file
+gpio.cpp.i:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/gpio.cpp.i
+.PHONY : gpio.cpp.i
+
+gpio.s: gpio.cpp.s
+
+.PHONY : gpio.s
+
+# target to generate assembly for a file
+gpio.cpp.s:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/gpio.cpp.s
+.PHONY : gpio.cpp.s
+
 hello_pixy.o: hello_pixy.cpp.o
 
 .PHONY : hello_pixy.o
@@ -150,6 +177,33 @@ hello_pixy.cpp.s:
 	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/hello_pixy.cpp.s
 .PHONY : hello_pixy.cpp.s
 
+robot.o: robot.cpp.o
+
+.PHONY : robot.o
+
+# target to build an object file
+robot.cpp.o:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/robot.cpp.o
+.PHONY : robot.cpp.o
+
+robot.i: robot.cpp.i
+
+.PHONY : robot.i
+
+# target to preprocess a source file
+robot.cpp.i:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/robot.cpp.i
+.PHONY : robot.cpp.i
+
+robot.s: robot.cpp.s
+
+.PHONY : robot.s
+
+# target to generate assembly for a file
+robot.cpp.s:
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/robot.cpp.s
+.PHONY : robot.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -159,9 +213,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... hello_pixy"
+	@echo "... gpio.o"
+	@echo "... gpio.i"
+	@echo "... gpio.s"
 	@echo "... hello_pixy.o"
 	@echo "... hello_pixy.i"
 	@echo "... hello_pixy.s"
+	@echo "... robot.o"
+	@echo "... robot.i"
+	@echo "... robot.s"
 .PHONY : help
 
 

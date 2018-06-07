@@ -1,1 +1,1 @@
-/usr/bin/c++      CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o  -o hello_pixy -rdynamic -lpixyusb -lboost_thread -lboost_system -lboost_chrono -lboost_date_time -lboost_atomic -lpthread -lusb-1.0 
+/usr/bin/c++      CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o CMakeFiles/hello_pixy.dir/gpio.cpp.o CMakeFiles/hello_pixy.dir/robot.cpp.o  -o hello_pixy  -L/usr/lib/libftdi1 -Wl,-rpath,/usr/lib/libftdi1 -rdynamic -lpixyusb -lboost_thread -lboost_system -lboost_chrono -lboost_date_time -lboost_atomic -lpthread -lusb-1.0 -Wl,-Bstatic -lftdi1 -Wl,-Bdynamic 

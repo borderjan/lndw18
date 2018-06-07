@@ -81,14 +81,66 @@ CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o.provides: CMakeFiles/hello_pixy.dir/h
 CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o.provides.build: CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o
 
 
+CMakeFiles/hello_pixy.dir/gpio.cpp.o: CMakeFiles/hello_pixy.dir/flags.make
+CMakeFiles/hello_pixy.dir/gpio.cpp.o: /home/jan/pixy/pixy/src/host/hello_pixy/gpio.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/pixy/pixy/build/hello_pixy/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/hello_pixy.dir/gpio.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/hello_pixy.dir/gpio.cpp.o -c /home/jan/pixy/pixy/src/host/hello_pixy/gpio.cpp
+
+CMakeFiles/hello_pixy.dir/gpio.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/hello_pixy.dir/gpio.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jan/pixy/pixy/src/host/hello_pixy/gpio.cpp > CMakeFiles/hello_pixy.dir/gpio.cpp.i
+
+CMakeFiles/hello_pixy.dir/gpio.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/hello_pixy.dir/gpio.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jan/pixy/pixy/src/host/hello_pixy/gpio.cpp -o CMakeFiles/hello_pixy.dir/gpio.cpp.s
+
+CMakeFiles/hello_pixy.dir/gpio.cpp.o.requires:
+
+.PHONY : CMakeFiles/hello_pixy.dir/gpio.cpp.o.requires
+
+CMakeFiles/hello_pixy.dir/gpio.cpp.o.provides: CMakeFiles/hello_pixy.dir/gpio.cpp.o.requires
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/gpio.cpp.o.provides.build
+.PHONY : CMakeFiles/hello_pixy.dir/gpio.cpp.o.provides
+
+CMakeFiles/hello_pixy.dir/gpio.cpp.o.provides.build: CMakeFiles/hello_pixy.dir/gpio.cpp.o
+
+
+CMakeFiles/hello_pixy.dir/robot.cpp.o: CMakeFiles/hello_pixy.dir/flags.make
+CMakeFiles/hello_pixy.dir/robot.cpp.o: /home/jan/pixy/pixy/src/host/hello_pixy/robot.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/pixy/pixy/build/hello_pixy/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/hello_pixy.dir/robot.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/hello_pixy.dir/robot.cpp.o -c /home/jan/pixy/pixy/src/host/hello_pixy/robot.cpp
+
+CMakeFiles/hello_pixy.dir/robot.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/hello_pixy.dir/robot.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jan/pixy/pixy/src/host/hello_pixy/robot.cpp > CMakeFiles/hello_pixy.dir/robot.cpp.i
+
+CMakeFiles/hello_pixy.dir/robot.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/hello_pixy.dir/robot.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jan/pixy/pixy/src/host/hello_pixy/robot.cpp -o CMakeFiles/hello_pixy.dir/robot.cpp.s
+
+CMakeFiles/hello_pixy.dir/robot.cpp.o.requires:
+
+.PHONY : CMakeFiles/hello_pixy.dir/robot.cpp.o.requires
+
+CMakeFiles/hello_pixy.dir/robot.cpp.o.provides: CMakeFiles/hello_pixy.dir/robot.cpp.o.requires
+	$(MAKE) -f CMakeFiles/hello_pixy.dir/build.make CMakeFiles/hello_pixy.dir/robot.cpp.o.provides.build
+.PHONY : CMakeFiles/hello_pixy.dir/robot.cpp.o.provides
+
+CMakeFiles/hello_pixy.dir/robot.cpp.o.provides.build: CMakeFiles/hello_pixy.dir/robot.cpp.o
+
+
 # Object files for target hello_pixy
 hello_pixy_OBJECTS = \
-"CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o"
+"CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o" \
+"CMakeFiles/hello_pixy.dir/gpio.cpp.o" \
+"CMakeFiles/hello_pixy.dir/robot.cpp.o"
 
 # External object files for target hello_pixy
 hello_pixy_EXTERNAL_OBJECTS =
 
 hello_pixy: CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o
+hello_pixy: CMakeFiles/hello_pixy.dir/gpio.cpp.o
+hello_pixy: CMakeFiles/hello_pixy.dir/robot.cpp.o
 hello_pixy: CMakeFiles/hello_pixy.dir/build.make
 hello_pixy: /usr/lib/x86_64-linux-gnu/libboost_thread.so
 hello_pixy: /usr/lib/x86_64-linux-gnu/libboost_system.so
@@ -97,8 +149,9 @@ hello_pixy: /usr/lib/x86_64-linux-gnu/libboost_date_time.so
 hello_pixy: /usr/lib/x86_64-linux-gnu/libboost_atomic.so
 hello_pixy: /usr/lib/x86_64-linux-gnu/libpthread.so
 hello_pixy: /usr/lib/x86_64-linux-gnu/libusb-1.0.so
+hello_pixy: /usr/lib/x86_64-linux-gnu/libftdi1.a
 hello_pixy: CMakeFiles/hello_pixy.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jan/pixy/pixy/build/hello_pixy/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable hello_pixy"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jan/pixy/pixy/build/hello_pixy/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable hello_pixy"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/hello_pixy.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -107,6 +160,8 @@ CMakeFiles/hello_pixy.dir/build: hello_pixy
 .PHONY : CMakeFiles/hello_pixy.dir/build
 
 CMakeFiles/hello_pixy.dir/requires: CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o.requires
+CMakeFiles/hello_pixy.dir/requires: CMakeFiles/hello_pixy.dir/gpio.cpp.o.requires
+CMakeFiles/hello_pixy.dir/requires: CMakeFiles/hello_pixy.dir/robot.cpp.o.requires
 
 .PHONY : CMakeFiles/hello_pixy.dir/requires
 

@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
 
     // Catch CTRL+C (SIGINT) signals //
     signal(SIGINT, handle_SIGINT);
-    printf("Hello Pixy:\n libpixyusb Version: %s\n", __LIBPIXY_VERSION__);
+    //printf("Hello Pixy:\n libpixyusb Version: %s\n", __LIBPIXY_VERSION__);
     // Connect to Pixy //
     pixy_init_status = pixy_init();
     // Was there an error initializing pixy? //

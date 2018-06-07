@@ -209,6 +209,9 @@ hello_pixy_BINARY_DIR:STATIC=/home/jan/pixy/pixy/build/hello_pixy
 //Value Computed by CMake
 hello_pixy_SOURCE_DIR:STATIC=/home/jan/pixy/pixy/src/host/hello_pixy
 
+//The directory containing a CMake configuration file for libftdi1/ftdi.
+libftdi1/ftdi_DIR:PATH=libftdi1/ftdi_DIR-NOTFOUND
+
 
 ########################
 # INTERNAL cache entries

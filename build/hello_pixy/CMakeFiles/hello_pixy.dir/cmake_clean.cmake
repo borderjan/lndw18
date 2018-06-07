@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/hello_pixy.dir/hello_pixy.cpp.o"
+  "CMakeFiles/hello_pixy.dir/gpio.cpp.o"
+  "CMakeFiles/hello_pixy.dir/robot.cpp.o"
   "hello_pixy.pdb"
   "hello_pixy"
 )
