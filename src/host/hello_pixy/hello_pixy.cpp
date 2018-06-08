@@ -88,7 +88,7 @@ int coord_to_slot(int ballcount){
             printf("Highest x : %i at index %i\n", max_loc, max_idx);
             //max_idx now holds highest x signature
             //highest x -> lowest slotnumber
-            sig_slots[i] = max_idx + 1; //assign slotnumber & correct base index
+            sig_slots[max_idx] = i + 1; //assign slotnumber & correct base index
             printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
         }
     }
@@ -167,6 +167,10 @@ int main(int argc, char * argv[]){
         fprintf(stderr, "Not all Colorcodes present!\n");
         fprintf(stderr, "Please provide ALL colorcodes.\n");
         exit(EXIT_FAILURE);
+    }
+    puts("Sorting rank:");
+    for(i = 0; i < NSIGS; i++){
+        printf("Rank %i : Signature %i (%c)\n", i, sig_sort_rank[i], color_sort_rank[i]);
     }
     i = 0;
     int      index;
@@ -337,14 +341,21 @@ int main(int argc, char * argv[]){
                 //get signature by rank
                 ballcount = 0;
                 for(rank = 0; rank < NSIGS; rank++){
+                    if(sigs[rank] != -1){ ballcount++; }
+                }// count signatures
+                printf("Total Signatures: %i\n", ballcount);
+                coord_to_slot(ballcount);
+                puts("Signature slots:");
+                printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
+                for(rank = 0; rank < NSIGS; rank++){
+                    printf("Computing Rank %i\n", rank);
                     if(sigs[sig_sort_rank[rank]] != -1){//signature present
-                        ballcount++;//count total signatures observed
                         pos = sig_sort_rank[rank];//specify signature to move
                         //create new move
                         del_move = malloc(sizeof(struct robot_move_list));
                         del_move->next = NULL;
                         del_move->signumber = pos;
-                        printf("moving from slot %i\n", pos);
+                        printf("Moving Signature %i currently at slot %i\n", pos, sig_slots[pos]);
                         if(final_move){
                             //append new move
                             final_move->next = del_move;
@@ -355,10 +366,6 @@ int main(int argc, char * argv[]){
                         }
                     }
                 }
-                printf("Total Signatures: %i\n", ballcount);
-                coord_to_slot(ballcount);
-                puts("Signature slots:");
-                printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
                 // all moves done - add stop move
                 del_move = malloc(sizeof(struct robot_move_list));
                 del_move->next = NULL;
@@ -375,17 +382,23 @@ int main(int argc, char * argv[]){
                     //get signature to move
                     sig = this_move->signumber;
                     if(sig == -1){
+                        puts("All Done");
                         pos = 15;//done, move bot to standby
                         run_flag = 0;
                     }else{
                         pos = sig_slots[sig]; //get signature slot
+                        printf("Moving Signature %i from slot %i\n", sig, pos);
+                        puts("Signature slots before track:");
+                        printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
                         for(index = 0; index < NSIGS; index++){
                             if(sig_slots[index] == pos){//currently moving ball
-                                sig_slots[index] = ballcount-1; //moved ball is now at rear of queue
+                                sig_slots[index] = ballcount; //moved ball is now at rear of queue
                             }else if(sig_slots[index] > pos){//balls behind the moved one
                                 sig_slots[index] = sig_slots[index] - 1; //balls behind the moved one roll up 1 slot
                             }
                         }
+                        puts("Signature slots after track:");
+                        printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
                     }
                     //write data pins
                     gpio_write_pin(PIN_0, (pos&1)?LOW:HIGH);
@@ -415,13 +428,13 @@ int main(int argc, char * argv[]){
         }
 
     }
-    if(!hsflag){//tell robot to move to standby position if no handshake error occurred
+    /*if(!hsflag){//tell robot to move to standby position if no handshake error occurred
         gpio_write_pin(PIN_0, LOW);
         gpio_write_pin(PIN_1, LOW);
         gpio_write_pin(PIN_2, LOW);
         gpio_write_pin(PIN_3, LOW);
         do_handshake_master();
-    }
+    }*/
     //reset ouput pins
     gpio_write_pin(PIN_0, HIGH);
     gpio_write_pin(PIN_1, HIGH);
