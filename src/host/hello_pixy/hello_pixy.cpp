@@ -51,10 +51,6 @@ int ballcount(){
     return bc;
 }
 
-//pseudos to interface with GPIO chip
-void waitForRobot(){}
-void signalRobot(int slot){}
-
 //pseudo to change Sorting LUT
 int setSortingTable(int ballNumber){
     return 0;
@@ -74,12 +70,10 @@ int main(int argc, char * argv[])
     // Connect to Pixy //
     pixy_init_status = pixy_init();
     // Was there an error initializing pixy? //
-    if(!pixy_init_status == 0)
-    {
+    if(!pixy_init_status == 0){
         // Error initializing Pixy //
         printf("pixy_init(): ");
         pixy_error(pixy_init_status);
-
         return pixy_init_status;
     }
     // Request Pixy firmware version //
@@ -103,45 +97,45 @@ int main(int argc, char * argv[])
         }
     }
 
-    #if 0
-    // Pixy Command Examples //
-    {
-    int32_t response;
-    int     return_value;
-
-    // Execute remote procedure call "cam_setAWB" with one output (host->pixy) parameter (Value = 1)
-    //
-    //   Parameters:                 Notes:
-    //
-    //   pixy_command("cam_setAWB",  String identifier for remote procedure
-    //                        0x01,  Length (in bytes) of first output parameter
-    //                           1,  Value of first output parameter
-    //                           0,  Parameter list seperator token (See value of: END_OUT_ARGS)
-    //                   &response,  Pointer to memory address for return value from remote procedure call
-    //                           0); Parameter list seperator token (See value of: END_IN_ARGS)
-    //
-
-    // Enable auto white balance //
-    pixy_command("cam_setAWB", UINT8(0x01), END_OUT_ARGS,  &response, END_IN_ARGS);
-
-    // Execute remote procedure call "cam_getAWB" with no output (host->pixy) parameters
-    //
-    //   Parameters:                 Notes:
-    //
-    //   pixy_command("cam_setAWB",  String identifier for remote procedure
-    //                           0,  Parameter list seperator token (See value of: END_OUT_ARGS)
-    //                   &response,  Pointer to memory address for return value from remote procedure call
-    //                           0); Parameter list seperator token (See value of: END_IN_ARGS)
-    //
-
-    // Get auto white balance //
-    return_value = pixy_command("cam_getAWB", END_OUT_ARGS, &response, END_IN_ARGS);
-
-    // Set auto white balance back to disabled //
-    pixy_command("cam_setAWB", UINT8(0x00), END_OUT_ARGS,  &response, END_IN_ARGS);
-    }
-    #endif
-
+    /*    #if 0
+     *    // Pixy Command Examples //
+     *    {
+     *    int32_t response;
+     *    int     return_value;
+     *
+     *    // Execute remote procedure call "cam_setAWB" with one output (host->pixy) parameter (Value = 1)
+     *    //
+     *    //   Parameters:                 Notes:
+     *    //
+     *    //   pixy_command("cam_setAWB",  String identifier for remote procedure
+     *    //                        0x01,  Length (in bytes) of first output parameter
+     *    //                           1,  Value of first output parameter
+     *    //                           0,  Parameter list seperator token (See value of: END_OUT_ARGS)
+     *    //                   &response,  Pointer to memory address for return value from remote procedure call
+     *    //                           0); Parameter list seperator token (See value of: END_IN_ARGS)
+     *    //
+     *
+     *    // Enable auto white balance //
+     *    pixy_command("cam_setAWB", UINT8(0x01), END_OUT_ARGS,  &response, END_IN_ARGS);
+     *
+     *    // Execute remote procedure call "cam_getAWB" with no output (host->pixy) parameters
+     *    //
+     *    //   Parameters:                 Notes:
+     *    //
+     *    //   pixy_command("cam_setAWB",  String identifier for remote procedure
+     *    //                           0,  Parameter list seperator token (See value of: END_OUT_ARGS)
+     *    //                   &response,  Pointer to memory address for return value from remote procedure call
+     *    //                           0); Parameter list seperator token (See value of: END_IN_ARGS)
+     *    //
+     *
+     *    // Get auto white balance //
+     *    return_value = pixy_command("cam_getAWB", END_OUT_ARGS, &response, END_IN_ARGS);
+     *
+     *    // Set auto white balance back to disabled //
+     *    pixy_command("cam_setAWB", UINT8(0x00), END_OUT_ARGS,  &response, END_IN_ARGS);
+}
+#endif
+*/
     //pixycam setup done, now for the robot...
     gpio_initialize(); //init adafruit ft232h gpio interface
     gpio_reset(); //put gpios in defined state
@@ -152,60 +146,90 @@ int main(int argc, char * argv[])
     gpio_set_pin_mode(OUTPUT, PIN_5);
     gpio_write_pin((pinmask)(PIN_5 | PIN_4), HIGH); // turn lamp off & clear robot signal line
     printf("Waiting for Robot...\n");
-    //do_handshake_slave();
-    int doSort = 0;
+    do_handshake_master();
+    int programState = 3;
     printf("Detecting blocks...\n");
+    int pos = 1;
     while(run_flag)
     {
-        // Wait for new blocks to be available //
-        while(!pixy_blocks_are_new() && run_flag);
-
-        // Get blocks from Pixy //
-        blocks_copied = pixy_get_blocks(BLOCK_BUFFER_SIZE, &blocks[0]);
-
-        if(blocks_copied < 0) {
-            // Error: pixy_get_blocks //
-            printf("pixy_get_blocks(): ");
-            pixy_error(blocks_copied);
-        }
-
-        // Display received blocks //
-        printf("frame %d:\n", i);
-
-        // transform block array into signature-based x-coord array
-        // ONLY WHEN NOT SORTING!
-        if(!doSort){
-            memset(sigs,-1,sizeof(sigs));
-            for(index = 0; index < blocks_copied; ++index) {
-                if(blocks[index].signature <= NSIGS){
-                    sigs[blocks[index].signature-1]=blocks[index].x;
+        switch(programState){
+            case 0: //waiting for buzzer / console input
+                //also, keep polling pixycam
+                //console input will probably not happen in v1
+                //TODO
+                // Wait for new blocks to be available //
+                while(!pixy_blocks_are_new() && run_flag);
+                if(!run_flag){ break; }//quit program early
+                // Get blocks from Pixy //
+                blocks_copied = pixy_get_blocks(BLOCK_BUFFER_SIZE, &blocks[0]);
+                if(blocks_copied < 0){
+                    // Error: pixy_get_blocks //
+                    printf("pixy_get_blocks(): ");
+                    pixy_error(blocks_copied);
                 }
-                //old example code
-                blocks[index].print(buf);
-                printf("  %s\n", buf);
-            }
+                // Display received blocks //
+                printf("frame %d:\n", i);
+                // transform block array into signature-based x-coord array
+                // ONLY WHEN NOT SORTING!
+                if(1){
+                    memset(sigs,-1,sizeof(sigs));
+                    for(index = 0; index < blocks_copied; ++index) {
+                        if(blocks[index].signature <= NSIGS){
+                            sigs[blocks[index].signature-1]=blocks[index].x;
+                        }
+                        //old example code
+                        blocks[index].print(buf);
+                        printf("  %s\n", buf);
+                    }
+                }
+                //sigs[] now has x-coordinates for each detected signature
+                //only the last x-coord of doppelganger sigs is retained
+                /*
+                 * for each ball in order:
+                 *   get ball slot
+                 *   pick ball from slot
+                 *   put ball at end
+                 */
+                //display all x-coordinates
+                int j;
+                for (j=0; j<NSIGS ; j++){
+                    printf("x%i =%i\n",j,sigs[j]);
+                }
+                i++;
+                sleep(1);
+                break;
+            case 1: //computing moves
+                //TODO
+                break;
+            case 2: //sorting in progress, main robot control happens here
+                //TODO
+                break;
+            case 3: //robot testing - manual activation only
+                gpio_write_pin(PIN_0, (pos&1)?LOW:HIGH);
+                gpio_write_pin(PIN_1, (pos&2)?LOW:HIGH);
+                gpio_write_pin(PIN_2, (pos&4)?LOW:HIGH);
+                gpio_write_pin(PIN_3, (pos&8)?LOW:HIGH);
+                do_handshake_master();
+                pos++;
+                if(pos > 6){ pos = 1; }
+                break;
         }
-        //sigs[] now has x-coordinates for each detected signature
-        //only the last x-coord of doppelganger sigs is retained
 
-        //TODO sorting algorithm
-        //basic algorithm
-        /*
-         * for each ball in order:
-         *   get ball slot
-         *   pick ball from slot
-         *   put ball at end
-        */
-        int current_ball;
-
-
-        //display all x-coordinates
-        int j;
-        for (j=0; j<NSIGS ; j++)
-        {
-            printf("x%i =%i\n",j,sigs[j]);
-        }
-        i++;
     }
+    //tell robot to move to standby position
+    gpio_write_pin(PIN_0, LOW);
+    gpio_write_pin(PIN_1, LOW);
+    gpio_write_pin(PIN_2, LOW);
+    gpio_write_pin(PIN_3, LOW);
+    do_handshake_master();
+    //reset ouput pins
+    gpio_write_pin(PIN_0, HIGH);
+    gpio_write_pin(PIN_1, HIGH);
+    gpio_write_pin(PIN_2, HIGH);
+    gpio_write_pin(PIN_3, HIGH);
+    //cleanup
+    gpio_shutdown();
     pixy_close();
+    printf("Program Done.\n");
+    exit(EXIT_SUCCESS);
 }

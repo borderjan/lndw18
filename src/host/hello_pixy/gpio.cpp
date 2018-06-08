@@ -27,6 +27,7 @@ static int hold_pinmode = 0;
 static int hold_write = 0;
 static unsigned char pinmap_hold = pinmap;
 static unsigned char wrbuf_hold;
+static int errcode = 0;
 
 inline void dealloc(){
     if(device){ free(device); device = NULL; }
@@ -234,8 +235,8 @@ int gpio_commit(int modechange, int write){
     }
     if(write){
         *wrbuf = wrbuf_hold;
-        if(ftdi_write_data(device, wrbuf, 1)){
-            fprintf(stderr, "Unable to write\n"); return -1;
+        if((errcode = ftdi_write_data(device, wrbuf, 1)) < 0){
+            fprintf(stderr, "Unable to write: Error %i\n", errcode); return errcode;
         }
         hold_write = 0;
     }
