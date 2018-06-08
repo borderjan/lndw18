@@ -38,6 +38,7 @@ static bool run_flag = true;
 //static int slot_xcoord_upper[NSIGS+1] = {065,135,205,275,345,415,485,555};
 // x-coordinates of signatures, indexed by signature
 static int sigs[NSIGS];
+static int sig_slots[NSIGS] = {2,4,1,6,3,5};
 // color code / signature indexed by sort rank (low = first)
 static unsigned char color_sort_rank[NSIGS] = {'r','g','b','y','n','p'};
 static unsigned int sig_sort_rank[NSIGS];
@@ -308,7 +309,7 @@ int main(int argc, char * argv[]){
                 for(rank = 0; rank < NSIGS; rank++){
                     if(sigs[sig_sort_rank[rank]] != -1){//signature present
                         ballcount++;//count total signatures observed
-                        pos = sig_sort_rank[rank]);//specify signature to move
+                        pos = sig_sort_rank[rank];//specify signature to move
                         //create new move
                         del_move = malloc(sizeof(struct robot_move_list));
                         del_move->next = NULL;
@@ -343,7 +344,7 @@ int main(int argc, char * argv[]){
                         pos = 15;//done, move bot to standby
                     }else{
                         pos = sig_slots[sig]; //get signature slot
-                        for(index = 0; index < NSIGS){
+                        for(index = 0; index < NSIGS; index++){
                             if(sig_slots[index] == pos){//currently moving ball
                                 sig_slots[index] = ballcount-1; //moved ball is now at rear of queue
                             }else if(sig_slots[index] > pos){//balls behind the moved one
