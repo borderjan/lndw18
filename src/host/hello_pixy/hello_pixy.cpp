@@ -23,17 +23,18 @@
 #include "gpio.h"
 
 #define BLOCK_BUFFER_SIZE    25
-#define NSIGS 7
+#define NSIGS 6
+
 // Pixy Block buffer //
 struct Block blocks[BLOCK_BUFFER_SIZE];
 
 static bool run_flag = true;
 //slot width 60mm, slot gap 5mm each side, top slot offset 5mm
-static int slot_xcoord_lower[NSIGS+1] = {005,075,145,215,285,355,425,495};
-static int slot_xcoord_upper[NSIGS+1] = {065,135,205,275,345,415,485,555};
+//static int slot_xcoord_lower[NSIGS+1] = {005,075,145,215,285,355,425,495};
+//static int slot_xcoord_upper[NSIGS+1] = {065,135,205,275,345,415,485,555};
 static int sigs[NSIGS];
-static int sig_perm_lut[NSIGS] = {1,2,3,4,5,6,7};
-
+static unsigned char color_sort_rank[NSIGS] = {'r','g','b','y','n','p'};
+static unsigned int sig_sort_rank[NSIGS];
 void handle_SIGINT(int unused)
 {
     // On CTRL+C - abort! //
@@ -56,9 +57,76 @@ int setSortingTable(int ballNumber){
     return 0;
 }
 
-int main(int argc, char * argv[])
-{
-    int      i = 0;
+int main(int argc, char * argv[]){
+    if(argc < 2){
+        puts("Please input sorting order as arguments");
+        puts("\tColor codes:");
+        puts("\ty - yellow");
+        puts("\tr - red");
+        puts("\tg - green");
+        puts("\tb - blue");
+        puts("\tp - pink");
+        puts("\tn - brown");
+        exit(EXIT_SUCCESS);
+    }
+    int i = 0;
+    int rank = 0;
+    int was_put = 0x3f;
+    for(i = 0; i < NSIGS; i++){
+        color_sort_rank[i] = '\0';
+        sig_sort_rank[i] = -1;
+    }
+    for(i = 1; i < argc; i++){
+        printf("ARG%i = %c (%02hhx / %02hhx)\n", i, argv[i][0], argv[i][0], 'r');
+        switch(argv[i][0]){
+            case 'r':
+                if(was_put & 0x01){
+                    //sig_sort_rank[0] = rank;
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x3e;
+                }
+                break;
+            case 'g':
+                if(was_put & 0x02){
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x3d;
+                }
+                break;
+                case 'b':
+                if(was_put & 0x04){
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x3b;
+                }
+                break;
+            case 'y':
+                if(was_put & 0x08){
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x37;
+                }
+                break;
+            case 'n':
+                if(was_put & 0x10){
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x2f;
+                }
+                break;
+            case 'p':
+                if(was_put & 0x20){
+                    color_sort_rank[rank++] = argv[i][0];
+                    was_put &= 0x1f;
+                }
+                break;
+            default:
+                fprintf(stderr, "Unknown Colorcode : %c\n",argv[i][0]);
+                break;
+        }
+    }
+    if(was_put){
+        fprintf(stderr, "Not all Colorcodes present!\n");
+        fprintf(stderr, "Please provide ALL colorcodes.\n");
+        exit(EXIT_FAILURE);
+    }
+    i = 0;
     int      index;
     int      blocks_copied;
     int      pixy_init_status;
@@ -137,7 +205,11 @@ int main(int argc, char * argv[])
 #endif
 */
     //pixycam setup done, now for the robot...
-    gpio_initialize(); //init adafruit ft232h gpio interface
+    if(gpio_initialize()){ //init adafruit ft232h gpio interface
+        //Error - need to shutdown
+        pixy_close();
+        exit(EXIT_FAILURE);
+    }
     gpio_reset(); //put gpios in defined state
     //setup comm pins
     setup_robot(PIN_7, PIN_4, PIN_NONE, (pinmask)(PIN_0 | PIN_1 | PIN_2 | PIN_3));
@@ -184,12 +256,6 @@ int main(int argc, char * argv[])
                 }
                 //sigs[] now has x-coordinates for each detected signature
                 //only the last x-coord of doppelganger sigs is retained
-                /*
-                 * for each ball in order:
-                 *   get ball slot
-                 *   pick ball from slot
-                 *   put ball at end
-                 */
                 //display all x-coordinates
                 int j;
                 for (j=0; j<NSIGS ; j++){
@@ -200,6 +266,12 @@ int main(int argc, char * argv[])
                 break;
             case 1: //computing moves
                 //TODO
+                /*
+                 * for each ball in order:
+                 *   get ball slot
+                 *   pick ball from slot
+                 *   put ball at end
+                 */
                 break;
             case 2: //sorting in progress, main robot control happens here
                 //TODO
