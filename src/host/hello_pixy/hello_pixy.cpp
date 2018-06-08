@@ -27,7 +27,7 @@
 
 struct robot_move_list{
     struct robot_move_list *next;
-    int slotnumber;
+    int signumber;
 };
 // Pixy Block buffer //
 struct Block blocks[BLOCK_BUFFER_SIZE];
@@ -57,7 +57,7 @@ int ballcount(){
 }
 
 // convert signature coordinate array into signature slotnumber array
-int coord_to_slot(int coord){
+int coord_to_slot(){
     //TODO conversion algorithm here
     // !Needs info about orientation of cam!
     return 0;
@@ -233,8 +233,10 @@ int main(int argc, char * argv[]){
     int programState = 3;
     printf("Detecting blocks...\n");
     int pos = 1;
+    int sig = -1;
     int wait = 1;
     int hsflag = 0;
+    int ballcount = 0;
     while(run_flag)
     {
         switch(programState){
@@ -302,13 +304,15 @@ int main(int argc, char * argv[]){
                 del_move = NULL;
                 final_move = NULL;
                 //get signature by rank
+                ballcount = 0;
                 for(rank = 0; rank < NSIGS; rank++){
                     if(sigs[sig_sort_rank[rank]] != -1){//signature present
-                        pos = coord_to_slot(sigs[sig_sort_rank[rank]]);
+                        ballcount++;//count total signatures observed
+                        pos = sig_sort_rank[rank]);//specify signature to move
                         //create new move
                         del_move = malloc(sizeof(struct robot_move_list));
                         del_move->next = NULL;
-                        del_move->slotnumber = pos;
+                        del_move->signumber = pos;
                         if(final_move){
                             //append new move
                             final_move->next = del_move;
@@ -319,10 +323,11 @@ int main(int argc, char * argv[]){
                         }
                     }
                 }
+                coord_to_slot();
                 // all moves done - add stop move
                 del_move = malloc(sizeof(struct robot_move_list));
                 del_move->next = NULL;
-                del_move->slotnumber = -1;
+                del_move->signumber = -1;
                 final_move->next = del_move;
                 final_move = del_move;
                 del_move = NULL; //safety cleanup
@@ -332,7 +337,20 @@ int main(int argc, char * argv[]){
                 //TODO
                 gpio_write_pin(PIN_5, LOW);//turn button LED on
                 while(this_move){
-                    pos = this_move->slotnumber & 0x0f;
+                    //get signature to move
+                    sig = this_move->signumber;
+                    if(sig == -1){
+                        pos = 15;//done, move bot to standby
+                    }else{
+                        pos = sig_slots[sig]; //get signature slot
+                        for(index = 0; index < NSIGS){
+                            if(sig_slots[index] == pos){//currently moving ball
+                                sig_slots[index] = ballcount-1; //moved ball is now at rear of queue
+                            }else if(sig_slots[index] > pos){//balls behind the moved one
+                                sig_slots[index] = sig_slots[index] - 1; //balls behind the moved one roll up 1 slot
+                            }
+                        }
+                    }
                     //write data pins
                     gpio_write_pin(PIN_0, (pos&1)?LOW:HIGH);
                     gpio_write_pin(PIN_1, (pos&2)?LOW:HIGH);
