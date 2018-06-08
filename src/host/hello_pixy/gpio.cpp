@@ -189,10 +189,10 @@ int gpio_wait_for_pin(pinmask pin, pinvalue value, int trigger, int timeout){
         polldat[1] = polldat[0] & pin;
         //read new pinvalue
         ftdi_read_pins(device, polldat);
-        if(value == (*polldat & pin)){ //correct level
+        if(value == (polldat[0] & pin)){ //correct level
             if(!trigger){ //level triggered - return immediately
                 return 0;
-            }else if(polldat[1] != (*polldat & pin)){ //transition detected
+            }else if(polldat[1] != (polldat[0] & pin)){ //transition detected
                 return 0;
             }
         }
@@ -203,7 +203,8 @@ int gpio_wait_for_pin(pinmask pin, pinvalue value, int trigger, int timeout){
                 return -1;
             }
         }
-        usleep(80000);//sleep for 80msec
+        //screw waiting, poll as fast as you can!
+        //usleep(80000);//sleep for 80msec
     }
     return -1;
 }

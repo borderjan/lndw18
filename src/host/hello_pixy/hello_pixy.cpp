@@ -25,6 +25,10 @@
 #define BLOCK_BUFFER_SIZE    25
 #define NSIGS 6
 
+struct robot_move_list{
+    struct robot_move_list *next,
+    int slotnumber
+};
 // Pixy Block buffer //
 struct Block blocks[BLOCK_BUFFER_SIZE];
 
@@ -32,13 +36,13 @@ static bool run_flag = true;
 //slot width 60mm, slot gap 5mm each side, top slot offset 5mm
 //static int slot_xcoord_lower[NSIGS+1] = {005,075,145,215,285,355,425,495};
 //static int slot_xcoord_upper[NSIGS+1] = {065,135,205,275,345,415,485,555};
+// x-coordinates of signatures, indexed by signature
 static int sigs[NSIGS];
+// color code / signature indexed by sort rank (low = first)
 static unsigned char color_sort_rank[NSIGS] = {'r','g','b','y','n','p'};
 static unsigned int sig_sort_rank[NSIGS];
-void handle_SIGINT(int unused)
-{
+void handle_SIGINT(int unused){
     // On CTRL+C - abort! //
-
     run_flag = false;
 }
 
@@ -52,8 +56,10 @@ int ballcount(){
     return bc;
 }
 
-//pseudo to change Sorting LUT
-int setSortingTable(int ballNumber){
+// convert signature coordinate array into signature slotnumber array
+int coord_to_slot(){
+    //TODO conversion algorithm here
+    // !Needs info about orientation of cam!
     return 0;
 }
 
@@ -81,37 +87,42 @@ int main(int argc, char * argv[]){
         switch(argv[i][0]){
             case 'r':
                 if(was_put & 0x01){
-                    //sig_sort_rank[0] = rank;
+                    sig_sort_rank[rank] = 0;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x3e;
                 }
                 break;
             case 'g':
                 if(was_put & 0x02){
+                    sig_sort_rank[rank] = 1;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x3d;
                 }
                 break;
                 case 'b':
                 if(was_put & 0x04){
+                    sig_sort_rank[rank] = 2;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x3b;
                 }
                 break;
             case 'y':
                 if(was_put & 0x08){
+                    sig_sort_rank[rank] = 3;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x37;
                 }
                 break;
             case 'n':
                 if(was_put & 0x10){
+                    sig_sort_rank[rank] = 4;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x2f;
                 }
                 break;
             case 'p':
                 if(was_put & 0x20){
+                    sig_sort_rank[rank] = 5;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x1f;
                 }
@@ -131,7 +142,7 @@ int main(int argc, char * argv[]){
     int      blocks_copied;
     int      pixy_init_status;
     char     buf[128];
-
+    struct robot_move_list *this_move = NULL, *del_move = NULL, final_move = NULL;
     // Catch CTRL+C (SIGINT) signals //
     signal(SIGINT, handle_SIGINT);
     //printf("Hello Pixy:\n libpixyusb Version: %s\n", __LIBPIXY_VERSION__);
@@ -222,6 +233,7 @@ int main(int argc, char * argv[]){
     int programState = 3;
     printf("Detecting blocks...\n");
     int pos = 1;
+    int wait = 1;
     while(run_flag)
     {
         switch(programState){
@@ -262,7 +274,15 @@ int main(int argc, char * argv[]){
                     printf("x%i =%i\n",j,sigs[j]);
                 }
                 i++;
-                sleep(1);
+                if(!wait){
+                    //check for gap in slot positions - later
+                    programState = 1; //GO!
+                    break;
+                }
+                if(gpio_wait_for_pin(PIN_6, LOW, 1, 1) == 0){//wait for buzzer pin flank w/ 1 sec timeout
+                    wait = 0;// prep for go
+                }
+                //sleep(1); //prevent console flooding
                 break;
             case 1: //computing moves
                 //TODO
@@ -272,6 +292,26 @@ int main(int argc, char * argv[]){
                  *   pick ball from slot
                  *   put ball at end
                  */
+                //clean residual moves from move fifo
+                while(this_move){
+                    del_move = this_move;
+                    this_move = this_move->next;
+                    free(del_move);
+                }
+                del_move = NULL;
+                //get signature by rank
+                for(rank = 0; rank < NSIGS; rank++){
+                    if(sigs[sig_sort_rank[rank]] != -1){//signature present
+                        pos = coord_to_slot(sigs[sig_sort_rank[rank]]);
+                        //create new move
+                        del_move = malloc(sizeof(struct robot_move_list));
+                        del_move->next = NULL;
+                        del_move->slotnumber = pos;
+                        if(this_move){
+                            this_move->next = del_move
+                        }
+                    }
+                }
                 break;
             case 2: //sorting in progress, main robot control happens here
                 //TODO
