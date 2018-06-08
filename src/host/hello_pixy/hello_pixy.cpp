@@ -26,8 +26,8 @@
 #define NSIGS 6
 
 struct robot_move_list{
-    struct robot_move_list *next,
-    int slotnumber
+    struct robot_move_list *next;
+    int slotnumber;
 };
 // Pixy Block buffer //
 struct Block blocks[BLOCK_BUFFER_SIZE];
@@ -57,7 +57,7 @@ int ballcount(){
 }
 
 // convert signature coordinate array into signature slotnumber array
-int coord_to_slot(){
+int coord_to_slot(int coord){
     //TODO conversion algorithm here
     // !Needs info about orientation of cam!
     return 0;
@@ -83,7 +83,7 @@ int main(int argc, char * argv[]){
         sig_sort_rank[i] = -1;
     }
     for(i = 1; i < argc; i++){
-        printf("ARG%i = %c (%02hhx / %02hhx)\n", i, argv[i][0], argv[i][0], 'r');
+        //printf("ARG%i = %c (%02hhx / %02hhx)\n", i, argv[i][0], argv[i][0], 'r');
         switch(argv[i][0]){
             case 'r':
                 if(was_put & 0x01){
@@ -142,7 +142,7 @@ int main(int argc, char * argv[]){
     int      blocks_copied;
     int      pixy_init_status;
     char     buf[128];
-    struct robot_move_list *this_move = NULL, *del_move = NULL, final_move = NULL;
+    struct robot_move_list *this_move = NULL, *del_move = NULL, *final_move = NULL;
     // Catch CTRL+C (SIGINT) signals //
     signal(SIGINT, handle_SIGINT);
     //printf("Hello Pixy:\n libpixyusb Version: %s\n", __LIBPIXY_VERSION__);
@@ -234,6 +234,7 @@ int main(int argc, char * argv[]){
     printf("Detecting blocks...\n");
     int pos = 1;
     int wait = 1;
+    int hsflag = 0;
     while(run_flag)
     {
         switch(programState){
@@ -299,6 +300,7 @@ int main(int argc, char * argv[]){
                     free(del_move);
                 }
                 del_move = NULL;
+                final_move = NULL;
                 //get signature by rank
                 for(rank = 0; rank < NSIGS; rank++){
                     if(sigs[sig_sort_rank[rank]] != -1){//signature present
@@ -307,33 +309,65 @@ int main(int argc, char * argv[]){
                         del_move = malloc(sizeof(struct robot_move_list));
                         del_move->next = NULL;
                         del_move->slotnumber = pos;
-                        if(this_move){
-                            this_move->next = del_move
+                        if(final_move){
+                            //append new move
+                            final_move->next = del_move;
+                            final_move = del_move;
+                        }else{
+                            //set move list head & end
+                            this_move = final_move = del_move;
                         }
                     }
                 }
+                // all moves done - add stop move
+                del_move = malloc(sizeof(struct robot_move_list));
+                del_move->next = NULL;
+                del_move->slotnumber = -1;
+                final_move->next = del_move;
+                final_move = del_move;
+                del_move = NULL; //safety cleanup
+                programState = 2; //Make it move!
                 break;
             case 2: //sorting in progress, main robot control happens here
                 //TODO
+                gpio_write_pin(PIN_5, LOW);//turn button LED on
+                while(this_move){
+                    pos = this_move->slotnumber & 0x0f;
+                    //write data pins
+                    gpio_write_pin(PIN_0, (pos&1)?LOW:HIGH);
+                    gpio_write_pin(PIN_1, (pos&2)?LOW:HIGH);
+                    gpio_write_pin(PIN_2, (pos&4)?LOW:HIGH);
+                    gpio_write_pin(PIN_3, (pos&8)?LOW:HIGH);
+                    if((hsflag = do_handshake_master())){ //MOVE IT!
+                        //handshake error - robot unresponsive
+                        run_flag = 0;
+                    }
+                    del_move = this_move;
+                    this_move = this_move->next;
+                    free(del_move); //remove executed move from fifo
+                }
                 break;
             case 3: //robot testing - manual activation only
+                //cycles through positions 1 to 6
                 gpio_write_pin(PIN_0, (pos&1)?LOW:HIGH);
                 gpio_write_pin(PIN_1, (pos&2)?LOW:HIGH);
                 gpio_write_pin(PIN_2, (pos&4)?LOW:HIGH);
                 gpio_write_pin(PIN_3, (pos&8)?LOW:HIGH);
-                do_handshake_master();
+                hsflag = do_handshake_master();
+                if(hsflag){ run_flag = 0; }
                 pos++;
                 if(pos > 6){ pos = 1; }
                 break;
         }
 
     }
-    //tell robot to move to standby position
-    gpio_write_pin(PIN_0, LOW);
-    gpio_write_pin(PIN_1, LOW);
-    gpio_write_pin(PIN_2, LOW);
-    gpio_write_pin(PIN_3, LOW);
-    do_handshake_master();
+    if(!hsflag){//tell robot to move to standby position if no handshake error occurred
+        gpio_write_pin(PIN_0, LOW);
+        gpio_write_pin(PIN_1, LOW);
+        gpio_write_pin(PIN_2, LOW);
+        gpio_write_pin(PIN_3, LOW);
+        do_handshake_master();
+    }
     //reset ouput pins
     gpio_write_pin(PIN_0, HIGH);
     gpio_write_pin(PIN_1, HIGH);

@@ -11,9 +11,11 @@ static int n_rx = -1;
 int do_handshake_master(){
     gpio_hold(0,0);//turn off any holds
     gpio_write_pin(hs_tx, SET);
-    gpio_wait_for_pin(hs_rx, SET, 0, -1);
+    if(gpio_wait_for_pin(hs_rx, SET, 0, 60)){ // 1 minute timeout - anti-block-measure
+        return -1;
+    }
     gpio_write_pin(hs_tx, CLR);
-    gpio_wait_for_pin(hs_rx, CLR, 0, -1);
+    return gpio_wait_for_pin(hs_rx, CLR, 0, 60);
 }
 
 int do_handshake_slave(){
