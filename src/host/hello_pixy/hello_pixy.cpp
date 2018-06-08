@@ -23,7 +23,7 @@
 #include "gpio.h"
 
 #define BLOCK_BUFFER_SIZE    25
-#define NSIGS 6
+#define NSIGS 5
 
 struct robot_move_list{
     struct robot_move_list *next;
@@ -38,9 +38,10 @@ static bool run_flag = true;
 //static int slot_xcoord_upper[NSIGS+1] = {065,135,205,275,345,415,485,555};
 // x-coordinates of signatures, indexed by signature
 static int sigs[NSIGS];
-static int sig_slots[NSIGS] = {2,4,1,6,3,5};
+//slot number of signature, indexed by signature
+static int sig_slots[NSIGS] = {2,4,1,3,5};
 // color code / signature indexed by sort rank (low = first)
-static unsigned char color_sort_rank[NSIGS] = {'r','g','b','y','n','p'};
+static unsigned char color_sort_rank[NSIGS] = {'r','g','b','y','n'};
 static unsigned int sig_sort_rank[NSIGS];
 void handle_SIGINT(int unused){
     // On CTRL+C - abort! //
@@ -58,9 +59,39 @@ int ballcount(){
 }
 
 // convert signature coordinate array into signature slotnumber array
-int coord_to_slot(){
+int coord_to_slot(int ballcount){
     //TODO conversion algorithm here
     // !Needs info about orientation of cam!
+    //test 1: low x -> last, high x -> first
+    if(1){
+        puts("Does this even run?");
+        int i, j, max_loc, max_idx;
+        for(i = 0; i < NSIGS; i++){//clean slot array
+            sig_slots[i] = -1;
+        }
+        printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
+        for(i = 0; i < ballcount; i++){ //for each ball
+            printf("Assigning Slot %i\n", i+1);
+            max_loc = -1;
+            max_idx = -1;
+            for(j = 0; j < NSIGS; j++){//find highest x coordinate
+                if((sigs[j] != -1) && (sig_slots[j] == -1)){
+                    printf("Sig%ix = %i\n", j, sigs[j]);
+                    //if signature present and not yet assigned
+                    if(sigs[j] > max_loc){//higher x location found
+                        max_loc = sigs[j];
+                        max_idx = j;
+                    }
+                    printf("Highest x now %i at index %i\n", max_loc, max_idx);
+                }
+            }
+            printf("Highest x : %i at index %i\n", max_loc, max_idx);
+            //max_idx now holds highest x signature
+            //highest x -> lowest slotnumber
+            sig_slots[i] = max_idx + 1; //assign slotnumber & correct base index
+            printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
+        }
+    }
     return 0;
 }
 
@@ -72,13 +103,12 @@ int main(int argc, char * argv[]){
         puts("\tr - red");
         puts("\tg - green");
         puts("\tb - blue");
-        puts("\tp - pink");
         puts("\tn - brown");
         exit(EXIT_SUCCESS);
     }
     int i = 0;
     int rank = 0;
-    int was_put = 0x3f;
+    int was_put = 0x1f;
     for(i = 0; i < NSIGS; i++){
         color_sort_rank[i] = '\0';
         sig_sort_rank[i] = -1;
@@ -121,13 +151,13 @@ int main(int argc, char * argv[]){
                     was_put &= 0x2f;
                 }
                 break;
-            case 'p':
+/*            case 'p':
                 if(was_put & 0x20){
                     sig_sort_rank[rank] = 5;
                     color_sort_rank[rank++] = argv[i][0];
                     was_put &= 0x1f;
                 }
-                break;
+                break;*/
             default:
                 fprintf(stderr, "Unknown Colorcode : %c\n",argv[i][0]);
                 break;
@@ -231,7 +261,7 @@ int main(int argc, char * argv[]){
     gpio_write_pin((pinmask)(PIN_5 | PIN_4), HIGH); // turn lamp off & clear robot signal line
     printf("Waiting for Robot...\n");
     do_handshake_master();
-    int programState = 3;
+    int programState = 0;
     printf("Detecting blocks...\n");
     int pos = 1;
     int sig = -1;
@@ -283,7 +313,7 @@ int main(int argc, char * argv[]){
                     programState = 1; //GO!
                     break;
                 }
-                if(gpio_wait_for_pin(PIN_6, LOW, 1, 1) == 0){//wait for buzzer pin flank w/ 1 sec timeout
+                if(gpio_wait_for_pin(PIN_6, LOW, 0, 1) == 0){//wait for buzzer pin flank w/ 1 sec timeout
                     wait = 0;// prep for go
                 }
                 //sleep(1); //prevent console flooding
@@ -314,6 +344,7 @@ int main(int argc, char * argv[]){
                         del_move = malloc(sizeof(struct robot_move_list));
                         del_move->next = NULL;
                         del_move->signumber = pos;
+                        printf("moving from slot %i\n", pos);
                         if(final_move){
                             //append new move
                             final_move->next = del_move;
@@ -324,7 +355,10 @@ int main(int argc, char * argv[]){
                         }
                     }
                 }
-                coord_to_slot();
+                printf("Total Signatures: %i\n", ballcount);
+                coord_to_slot(ballcount);
+                puts("Signature slots:");
+                printf("%i %i %i %i %i\n", sig_slots[0], sig_slots[1], sig_slots[2], sig_slots[3], sig_slots[4]);
                 // all moves done - add stop move
                 del_move = malloc(sizeof(struct robot_move_list));
                 del_move->next = NULL;
@@ -342,6 +376,7 @@ int main(int argc, char * argv[]){
                     sig = this_move->signumber;
                     if(sig == -1){
                         pos = 15;//done, move bot to standby
+                        run_flag = 0;
                     }else{
                         pos = sig_slots[sig]; //get signature slot
                         for(index = 0; index < NSIGS; index++){
